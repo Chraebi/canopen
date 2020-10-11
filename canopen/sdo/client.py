@@ -65,6 +65,7 @@ class SdoClient(SdoBase):
         try:
             response = self.responses.get(
                 block=True, timeout=self.RESPONSE_TIMEOUT)
+            print("Response: ", response)
         except queue.Empty:
             raise SdoCommunicationError("No SDO response received")
         res_command, = struct.unpack_from("B", response)

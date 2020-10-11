@@ -614,7 +614,7 @@ ObjectType=7
 DataType=5
 AccessType=RW
 PDOMapping=0
-DefaultValue=1
+DefaultValue=11614872592
 LowLimit=0
 HighLimit=4
 

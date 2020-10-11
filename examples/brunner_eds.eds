@@ -91,6 +91,533 @@ DataType=0x0007
 AccessType=ro
 PDOMapping=0
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Profile Control Function ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[6064]
+ParameterName=Position actual value
+ObjectType=0x7
+AccessType=ro
+DataType=0x0004
+PDOMapping=1
+
+[606C]
+ParameterName=Velocity actual value
+ObjectType=0x7
+AccessType=ro
+DataType=0x0004
+PDOMapping=1
+
+[1600]
+ParameterName=Receive PDO 0 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1600sub0]
+ParameterName=Number of mapped objects RPDO 1
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=1
+LowLimit=0
+HighLimit=4
+
+[1600sub1]
+ParameterName=RPDO 1 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614807056
+
+[1600sub2]
+ParameterName=RPDO 1 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1600sub3]
+ParameterName=RPDO 1 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1600sub4]
+ParameterName=RPDO 1 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1601]
+ParameterName=Receive PDO 1 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1601sub0]
+ParameterName=Number of mapped objects RPDO 2
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1601sub1]
+ParameterName=RPDO 2 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614807056
+
+[1601sub2]
+ParameterName=RPDO 2 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1616904200
+
+[1601sub3]
+ParameterName=RPDO 2 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1601sub4]
+ParameterName=RPDO 2 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1602]
+ParameterName=Receive PDO 2 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1602sub0]
+ParameterName=Number of mapped objects RPDO 3
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1602sub1]
+ParameterName=RPDO 3 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614807056
+
+[1602sub2]
+ParameterName=RPDO 3 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1618608160
+
+[1602sub3]
+ParameterName=RPDO 3 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1602sub4]
+ParameterName=RPDO 3 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1603]
+ParameterName=Receive PDO 3 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1603sub0]
+ParameterName=Number of mapped objects RPDO 4
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1603sub1]
+ParameterName=RPDO 4 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614807056
+
+[1603sub2]
+ParameterName=RPDO 4 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1627324448
+
+[1603sub3]
+ParameterName=RPDO 4 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1603sub4]
+ParameterName=RPDO 4 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1800]
+ParameterName=Transmit PDO 0 communication parameters
+ObjectType=9
+SubNumber=3
+
+[1800sub0]
+ParameterName=Number of Entries
+ObjectType=7
+DataType=5
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+LowLimit=2
+HighLimit=2
+
+[1800sub1]
+ParameterName=COB-ID use by TPDO 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=$NODEID+384
+
+[1800sub2]
+ParameterName=Transmission type TPDO 1
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=255
+LowLimit=0
+HighLimit=255
+
+[1801]
+ParameterName=Transmit PDO 1 communication parameters
+ObjectType=9
+SubNumber=3
+
+[1801sub0]
+ParameterName=Number of Entries
+ObjectType=7
+DataType=5
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+LowLimit=2
+HighLimit=2
+
+[1801sub1]
+ParameterName=COB-ID use by TPDO 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=$NODEID+640
+
+[1801sub2]
+ParameterName=Transmission type TPDO 2
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=255
+LowLimit=0
+HighLimit=255
+
+[1802]
+ParameterName=Transmit PDO 2 communication parameters
+ObjectType=9
+SubNumber=3
+
+[1802sub0]
+ParameterName=Number of Entries
+ObjectType=7
+DataType=5
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+LowLimit=2
+HighLimit=2
+
+[1802sub1]
+ParameterName=COB-ID use by TPDO 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=$NODEID+896
+
+[1802sub2]
+ParameterName=Transmission type TPDO 3
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+LowLimit=0
+HighLimit=255
+
+[1803]
+ParameterName=Transmit PDO 3 communication parameters
+ObjectType=9
+SubNumber=3
+
+[1803sub0]
+ParameterName=Number of Entries
+ObjectType=7
+DataType=5
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+LowLimit=2
+HighLimit=2
+
+[1803sub1]
+ParameterName=COB-ID use by TPDO 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=$NODEID+1152
+
+[1803sub2]
+ParameterName=Transmission type TPDO 4
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+LowLimit=0
+HighLimit=255
+
+[1a00]
+ParameterName=Transmit PDO 0 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1a00sub0]
+ParameterName=Number of mapped objects TPDO 1
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=11614872592
+LowLimit=0
+HighLimit=4
+
+[1a00sub1]
+ParameterName=TPDO 1 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614872592
+
+[1a00sub2]
+ParameterName=TPDO 1 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a00sub3]
+ParameterName=TPDO 1 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a00sub4]
+ParameterName=TPDO 1 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a01]
+ParameterName=Transmit PDO 1 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1a01sub0]
+ParameterName=Number of mapped objects TPDO 2
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1a01sub1]
+ParameterName=TPDO 2 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614872592
+
+[1a01sub2]
+ParameterName=TPDO 2 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1616969736
+
+[1a01sub3]
+ParameterName=TPDO 2 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a01sub4]
+ParameterName=TPDO 2 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a02]
+ParameterName=Transmit PDO 2 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1a02sub0]
+ParameterName=Number of mapped objects TPDO 3
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1a02sub1]
+ParameterName=TPDO 3 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614872592
+
+[1a02sub2]
+ParameterName=TPDO 3 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1617166368
+
+[1a02sub3]
+ParameterName=TPDO 3 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a02sub4]
+ParameterName=TPDO 3 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a03]
+ParameterName=Transmit PDO 3 mapping parameter
+ObjectType=9
+SubNumber=5
+
+[1a03sub0]
+ParameterName=Number of mapped objects TPDO 4
+ObjectType=7
+DataType=5
+AccessType=RW
+PDOMapping=0
+DefaultValue=2
+LowLimit=0
+HighLimit=4
+
+[1a03sub1]
+ParameterName=TPDO 4 mapping information 1
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1614872592
+
+[1a03sub2]
+ParameterName=TPDO 4 mapping information 2
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=1617690656
+
+[1a03sub3]
+ParameterName=TPDO 4 mapping information 3
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+[1a03sub4]
+ParameterName=TPDO 4 mapping information 4
+ObjectType=7
+DataType=7
+AccessType=RW
+PDOMapping=0
+DefaultValue=0
+
+
 [1005]
 ParameterName=COB-ID SYNC
 ObjectType=0x8
@@ -159,6 +686,25 @@ PDOMapping=0
 ParameterName=Store parameters/save communication parameters
 DataType=0x0007
 AccessType=rw ; ro if autonomous storing is supported
+PDOMapping=0
+
+[2031]
+ParameterName=Temperature
+ObjectType=0x8
+DataType=0x3
+AccessType=rw
+DefaultValue=2
+
+[2031sub01]
+ParameterName=Drive Temp
+DataType=0x3
+AccessType=ro;
+PDOMapping=1
+
+[2031sub02]
+ParameterName=Motor Temp
+DataType=0x3
+AccessType=ro ;
 PDOMapping=0
 
 [1010sub03]
@@ -1189,23 +1735,7 @@ AccessType=rw
 DataType=0x0004
 PDOMapping=1
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Profile Control Function ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-[6064]
-ParameterName=Position actual value
-ObjectType=0x7
-AccessType=ro
-DataType=0x0004
-PDOMapping=1
-
-[606C]
-ParameterName=Velocity actual value
-ObjectType=0x7
-AccessType=ro
-DataType=0x0004
-PDOMapping=1
 
 ; Local 0x7iables:
 ; mode: conf

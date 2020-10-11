@@ -19,7 +19,7 @@ try:
     network.check()
 
     # Add some nodes with corresponding Object Dictionaries
-    # node = canopen.BaseNode402(12, 'brunner_eds.eds')
+    #node = canopen.BaseNode402(12, 'sample.eds')
     node = canopen.BaseNode402(12, 'brunner_eds.eds')
     network.add_node(node)
     # network.add_node(34, 'test.eds')
@@ -27,7 +27,7 @@ try:
 
     # Reset network
     node.nmt.state = 'RESET COMMUNICATION'
-    #node.nmt.state = 'RESET'
+    node.nmt.state = 'RESET'
     node.nmt.wait_for_bootup(15)
 
     print('node state 1) = {0}'.format(node.nmt.state))
@@ -74,7 +74,8 @@ try:
 
 
     print('node state 4) = {0}'.format(node.nmt.state))
-    node.op_mode = "VELOCITY"
+    node.op_mode = "PROFILED VELOCITY"
+    node.op_mode = "PROFILED POSITION"
     # Read PDO configuration from node
     node.tpdo.read()
     # Re-map TxPDO1

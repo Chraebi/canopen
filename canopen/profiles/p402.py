@@ -240,7 +240,6 @@ class BaseNode402(RemoteNode):
             "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
                 self.id))
         print(self.tpdo_values)
-        return
         if 0x6041 not in self.tpdo_values: # Statusword
             raise ValueError(
                 "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
@@ -334,9 +333,9 @@ class BaseNode402(RemoteNode):
         - 'OPEN LOOP VECTOR MODE'
         """
         try:
-            #if not self.is_op_mode_supported(mode):
-            #    raise TypeError(
-            #        'Operation mode {0} not suppported on node {1}.'.format(mode, self.id))
+            if not self.is_op_mode_supported(mode):
+                raise TypeError(
+                    'Operation mode {0} not suppported on node {1}.'.format(mode, self.id))
 
             start_state = self.state
 
