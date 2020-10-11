@@ -1,0 +1,26 @@
+cobid:
+4 Bits = function code
+7 Bits = Node ID
+
+data:
+1st data byte = requested stae
+2nd data byte node ID
+
+0x0 cob-id
+01 0C -> Node 12 start
+02 0C -> Node 12 stop
+80 0C -> Node 12 preOp
+
+
+Heartbeat Settings in 0x1017 Producer Heartbeat (Currently set to 0 --> No HB)
+PID Values are multiplied by 65535
+
+
+OD Entry and values --> order is flipped --> 60FF -> FF60 etc
+
+-----------------------------
+PDO Data 18C --> Setup in 0x1A00
+e.g 37 04 ED 79 9D 00 3A 00
+3A Temperature == 59
+37 Status Word
+ED 79 9D 00 --> Position (Swap order!! this means value is get by hex2dec (009D79ED) --> Found in OD 0x6063 Position Actual Value

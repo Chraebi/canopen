@@ -1,0 +1,1212 @@
+; Copyright (c) 2013, Georgia Tech Research Corporation
+; All rights reserved.
+;
+; Author(s): Neil T. Dantam <ntd@gatech.edu>
+; Georgia Tech Humanoid robotics Lab
+; Under Direction of Prof. Mike Stilman <mstilman@cc.gatech.edu>
+;
+; This file is provided under the following "BSD-style" License:
+;
+;   Redistribution and use in source and binary forms, with or
+;   without modification, are permitted provided that the following
+;   conditions are met:
+;   * Redistributions of source code must retain the above copyright
+;     notice, this list of conditions and the following disclaimer.
+;   * Redistributions in binary form must reproduce the above
+;     copyright notice, this list of conditions and the following
+;     disclaimer in the documentation and/or other materials provided
+;     with the distribution.
+;   THIS SOFTWARE IS ProVIDED BY THE COPYRIGHT HOLDERS AND
+;   CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES
+;   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+;   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+;   DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+;   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL
+;   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+;   LIMITED TO, ProCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+;   USE, DATA, OR ProFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+;   AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+;   LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHErwISE) ARISING IN
+;   ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+;   POSSIBILITY OF SUCH DAMAGE.
+
+[FileInfo]
+FileName=dsp301.eds
+FileVersion=1
+FileRevision=2
+EDSVersion=4.0
+Description=EDS for dsp402
+Creation0x0100=23:50
+CreationDate=03-18-2013
+CreatedBy=Neil T. Dantam
+Modification0x0100=23:50
+ModificationDate=03-18-2013
+ModifiedBy=Neil T. Dantam
+
+[enum:object_type]
+NULL.value            = 0
+NULL.description      = no data fields
+0x000F.value          = 2
+0x000F.description    = large 0x7iable amount of data
+0x5.value         = 5
+0x5.description   = A type definition
+DEFSTRUCT.value       = 6
+DEFSTRUCT.description = A struct definition
+0x7.value             = 7
+0x7.description       = A single value
+0x8.value           = 8
+0x8.description     = An 0x8
+0x9.value          = 9
+0x9.description    = A 0x9 type
+
+
+[1000]
+ParameterName=Device type
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+
+[1001]
+ParameterName=Error register
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[1002]
+ParameterName=Manufacturer status register
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=1
+MaskEnum = status_register
+
+[1003]
+ParameterName=Pre-defined error field
+ObjectType=0x8
+CompactSubObj=255
+DataType=0x0007
+AccessType=ro
+PDOMapping=0
+
+[1005]
+ParameterName=COB-ID SYNC
+ObjectType=0x8
+DataType=0x0007
+PDOMapping=0
+AccessType=rw
+
+[1006]
+; given in multiple of micro seconds
+; 0 means disabled
+ParameterName=Communication cycle period
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1007]
+ParameterName=Synchronous window length
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+DefaultValue=0
+
+[1008]
+ParameterName=Manufacturer device name
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+PDOMapping=0
+
+[1009]
+ParameterName=Manufacturer hardware version
+ObjectType=0x7
+DataType=0x0009
+AccessType=ro
+PDOMapping=0
+
+[100C]
+ParameterName=Guard 0x0100
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw ; ro is life guarding not supported
+PDOMapping=0
+
+[100D]
+ParameterName=Life 0x0100 favtor
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw ; ro is life guarding not supported
+PDOMapping=0
+
+[1010]
+ParameterName=Store parameters
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+
+[1010sub01]
+ParameterName=Store parameters/save all parameters
+DataType=0x0007
+AccessType=rw ; ro if autonomous storing is supported
+PDOMapping=0
+
+[1010sub02]
+ParameterName=Store parameters/save communication parameters
+DataType=0x0007
+AccessType=rw ; ro if autonomous storing is supported
+PDOMapping=0
+
+[1010sub03]
+ParameterName=Store parameters/save application parameters
+DataType=0x0007
+AccessType=rw ; ro if autonomous storing is supported
+PDOMapping=0
+
+[1011]
+ParameterName=Restore default parameters
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+
+[1011sub01]
+ParameterName=Restore default parameters/restore all default parameters
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1011sub02]
+ParameterName=Restore default parameters/restore communication default parameters
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1011sub03]
+ParameterName=Restore default parameters/restore application default parameters
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1012]
+ParameterName=COB-ID 0x0100 stamp message
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1013]
+; value is given in multiples of 1 micro second
+ParameterName=High resolution 0x0100 stamp
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1014]
+; default: 0x80 + NODE-ID, 11-bit frame
+ParameterName=COB-ID emergency message
+ObjectType=0x7
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[1015]
+; value given in multiples of 100 micro second
+ParameterName=Inhibit 0x0100 EMCY
+ObjectType=0x7
+DataType=0x0006
+PDOMapping=0
+AccessType=rw
+
+[1016]
+;; lower 16 bits: 0x0100
+;; next 8 bits: node ide
+;; top 8 bits: 0 / reserved
+ParameterName=Consumer heartbeat 0x0100
+ObjectType=0x8
+DataType=0x0007
+PDOMapping=0
+AccessType=rw
+
+[1017]
+;; lower 16 bits: 0x0100
+;; next 8 bits: node ide
+;; top 8 bits: 0 / reserved
+ParameterName=Producer heartbeat 0x0100
+ObjectType=0x8
+DataType=0x0007
+PDOMapping=0
+AccessType=rw
+
+[1018]
+ParameterName=0x0023 object
+ObjectType=0x9
+DataType=0x0023
+
+[1018sub1]
+ParameterName=0x0023 object/Vendor-ID
+DataType=0x0007
+PDOMapping=0
+AccessType=ro
+
+[1018sub2]
+ParameterName=0x0023 object/Product code
+DataType=0x0007
+PDOMapping=0
+AccessType=ro
+
+[1018sub3]
+ParameterName=0x0023 object/Revision number
+DataType=0x0007
+PDOMapping=0
+AccessType=ro
+
+[1018sub4]
+ParameterName=0x0023 object/Serial number
+DataType=0x0007
+PDOMapping=0
+AccessType=ro
+
+[1019]
+ParameterName=Synchronous counter overflow value
+DataType=0x0005
+ObjectType=0x7
+PDOMapping=0
+AccessType=rw
+
+[1020]
+ParameterName=Verify configuration
+DataType=0x0007
+ObjectType=0x8
+PDOMapping=0
+
+[1020sub1]
+ParameterName=Verify configuration/Configuration date
+DataType=0x0007
+PDOMapping=0
+AccessType=rw
+
+[1020sub2]
+ParameterName=Verify configuration/Configuration 0x0100
+DataType=0x0007
+PDOMapping=0
+AccessType=rw
+
+[1021]
+ParameterName=Store EDS
+DataType=0x000F
+ObjectType=0x7
+PDOMapping=0
+AccessType=ro
+
+[1022]
+ParameterName=Store format
+DataType=0x0006
+ObjectType=0x7
+PDOMapping=0
+AccessType=ro
+
+[1023]
+ParameterName=OS command
+ObjectType=0x9
+PDOMapping=0
+
+[1023sub2]
+ParameterName=OS command/status
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[1023sub3]
+ParameterName=OS command/reply
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[1024]
+ParameterName=OS command mode
+ObjectType=0x7
+DataType=0x0005
+PDOMapping=0
+AccessType=ro
+
+[1028]
+ParameterName=Emergency consumer
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+
+
+[1029]
+ParameterName=Error behavior
+ObjectType=0x8
+DataType=0x0005
+AccessType=rw
+
+[1029sub1]
+ParameterName=Error behavior/communication error
+DataType=0x0005
+AccessType=rw
+
+[enum:pdo_transmission_type]
+SYNCHroNOUS.value = 0x00
+EVENT_DRIVEN.value = 0xFF
+
+; [1200] ; to 127F
+; ParameterName=SDO service parameter
+; ObjectType=0x9
+
+; [1200sub1]
+; ParameterName=COB-ID RX
+; ObjectType=0x7
+; DataType=0x0007
+
+; [1200sub2]
+; ParameterName=COB-ID TX
+; ObjectType=0x7
+; DataType=0x0007
+
+[6007]
+ParameterName=Abort connection option code
+ObjectType=0x7
+DataType=0x0003
+AccessType=rw
+PDOMapping=1
+DefaultValue=0
+ValueEnum=abort_conn
+
+[enum:abort_conn]
+no_action.value               = 0
+malfunction.value             = 1
+disable_voltage.value         = 2
+quick_stop.value              = 3
+
+[603F]
+ParameterName=Error Code
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+DefaultValue=0
+
+[6402]
+ParameterName=Motor Type
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+PDOMapping=1
+ValueEnum=motor_type
+
+[enum:motor_type]
+NON_STANDARD.value            = 0x0000
+PHASE_MODULATED_DC.value      = 0x0001
+FREQ_CONTroLLED_DC.value      = 0x0002
+PM_SYNCHroNOUS.value          = 0x0003
+FC_SYNCHroNOUS.value          = 0x0004
+SWITCHED_RELUCTANCE.value     = 0x0005
+WOUND_roTOR.value             = 0x0006
+SQUIRREL_CAGE.value           = 0x0007
+STEPPER.value                 = 0x0008
+MICro_STEP_STEPPER.value      = 0x0009
+SINUSOIDAL_PM_BL.value        = 0x000A
+TRAPEZOIDAL_PM_BL.value       = 0x000B
+
+[6403]
+ParameterName=Motor catalog number
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6404]
+ParameterName=Motor manufacturer
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6405]
+ParameterName=http motor catalog address
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6406]
+ParameterName=Motor calibrate date
+ObjectType=0x7
+DataType=0x000C
+AccessType=rw
+PDOMapping=1
+
+[6410]
+ParameterName=Motor data
+ObjectType=0x9
+
+[6410sub0]
+ParameterName=Motor data/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[6502]
+ParameterName=Supported drive modes
+ObjectType=0x7
+DataType=0x0007
+AccessType=ro
+PDOMapping=1
+MaskEnum=supported_drive_modes_mask
+
+[enum:supported_drive_modes_mask]
+PP.value                      = 1 << 0
+PP.description                = Profile Position
+VL.value                      = 1 << 1
+VL.description                = Velocity
+PV.value                      = 1 << 2
+PV.description                = Profile Velocity
+TQ.value                      = 1 << 3
+TQ.description                = Torque
+;  bit 4 reserved
+HM.value                      = 1 << 5
+HM.description                = Homing
+IP.value                      = 1 << 6
+IP.description                = Interpolated position
+;  bits 7-15 reserved
+;  bits 16-31 manufacturer specific
+
+[6503]
+ParameterName=Drive catalog number
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6504]
+ParameterName=Drive manufacturer
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6505]
+ParameterName=http drive catalog address
+ObjectType=0x7
+DataType=0x0009
+AccessType=rw
+PDOMapping=0
+
+[6510]
+ParameterName=Drive data
+ObjectType=0x9
+
+[6510sub0]
+ParameterName=Drive data/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+
+[enum:digital_input_mask]
+NEG_LIMIT_SW.value            = 1 << 0
+POS_LIMIT_SW.value            = 1 << 1
+HOME_SW.value                 = 1 << 2
+INTERLOCK.value               = 1 << 3
+
+[60FE]
+ParameterName=Digital outputs
+ObjectType=0x8
+DataType=0x0007
+AccessType=ro
+
+[60FEsub0]
+ParameterName=Digital outputs/number of entries
+DataType=0x0005
+AccessType=rw
+PDOMapping=1
+DefaultValue=0
+
+[60FEsub2]
+ParameterName=Digital outputs/bit mask
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=0
+
+
+;;;;;;;;;;;;;;;;;;;;
+;; DEVICE CONTroL ;;
+;;;;;;;;;;;;;;;;;;;;
+
+[6040]
+ParameterName=Controlword
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+PDOMapping=1
+MaskEnum=ctrlmask
+
+[enum:ctrlmask]
+SWITCH_ON.value               = 1 <<  0
+ENABLE_VOLTAGE.value          = 1 <<  1
+QUICK_STOP.value              = 1 <<  2
+ENABLE_OPERATION.value        = 1 <<  3
+OP_MODE_SPECIFIC0.value       = 1 <<  4
+OP_MODE_SPECIFIC1.value       = 1 <<  5
+OP_MODE_SPECIFIC2.value       = 1 <<  6
+RESET_FAULT.value             = 1 <<  7
+HALT.value                    = 1 <<  8
+RESERVED0.value               = 1 <<  9
+RESERVED1.value               = 1 << 10
+MFR_SPECIFIC0.value           = 1 << 11
+MFR_SPECIFIC1.value           = 1 << 12
+MFR_SPECIFIC2.value           = 1 << 13
+MFR_SPECIFIC3.value           = 1 << 14
+MFR_SPECIFIC4.value           = 1 << 15
+
+[6041]
+ParameterName=Statusword
+ObjectType=0x7
+DataType=0x0006
+AccessType=ro
+PDOMapping=1
+MaskEnum=statmask
+
+[enum:statmask]
+READY_TO_SWITCH_ON.value      = 1 <<  0
+SWITCHED_ON.value             = 1 <<  1
+OP_ENABLED.value              = 1 <<  2
+FAULT.value                   = 1 <<  3
+VOLTAGE_ENABLED.value         = 1 <<  4
+QUICK_STOP.value              = 1 <<  5
+SWITCH_ON_DISABLED.value      = 1 <<  6
+WARNING.value                 = 1 <<  7
+MFR_SPECIFIC0.value           = 1 <<  8
+REMOTE.value                  = 1 <<  9
+TARGET_REACHED.value          = 1 << 10
+INTERNAL_LIMIT_ACTIVE.value   = 1 << 11
+OP_MODE_SPECIFIC0.value       = 1 << 12
+OP_MODE_SPECIFIC1.value       = 1 << 13
+MFR_SPECIFIC1.value           = 1 << 14
+MFR_SPECIFIC2.value           = 1 << 15
+
+
+[605D]
+ParameterName=Halt option code
+ObjectType=0x7
+DataType=0x0003
+AccessType=rw
+DefaultValue=1
+ValueEnum=halt_option
+
+[enum:halt_option]
+; -32768 ... -1 are mfr specific
+DISABLE.value                 = 0
+SLOW_DOWN_RAMP.value          = 1
+QUICK_STOP.value              = 2
+CURRENT_LIMIT.value           = 3
+VOLTAGE_LIMIT.value           = 4
+
+[605E]
+; what to do if a fault occurs
+ParameterName=Fault reaction option code
+ObjectType=0x7
+DataType=0x0006
+AccessType=rw
+PDOMapping=0
+DefaultValue=2
+ValueEnum=fault_reaction
+
+[enum:fault_reaction]
+DISABLE.value                 = 0
+SLOW_DOWN_RAMP.value          = 1
+QUICK_STOP_RAMP.value         = 2
+CURRENT_LIMIT.value           = 3
+VOLTAGE_LIMIT.value           = 4
+
+
+[6060]
+; Switches to the chosen mode
+ParameterName=Modes of operation
+ObjectType=0x7
+DataType=0x0002
+AccessType=rw
+PDOMapping=1
+ValueEnum=op_mode
+
+[enum:op_mode]
+ProFILE_POSITION.value        = 0x1
+VELOCITY.value                = 0x2
+ProFILE_VELOCITY.value        = 0x3
+TORQUE.value                  = 0x4
+RESERVED1.value               = 0x5
+HOMING.value                  = 0x6
+PVT.value                     = 0x7
+PVT.description               = Interpolated Position
+CYCLIC_SYNC_POSITION.value    = 0x8
+CYCLIC_SYNC_VELOCITY.value    = 0x9
+CYCLIC_SYNC_TORQUE.value      = 0x9
+; 11 ... 127 reserved
+CUSTOM.value                  = 0xFF
+
+[6061]
+; shows the current mode
+ParameterName=Modes of operation display
+ObjectType=0x7
+DataType=0x0002
+AccessType=ro
+PDOMapping=1
+
+
+
+
+;;;;;
+
+[607c]
+ParameterName=Home offset
+ObjectType=0x7
+DataType=0x0004
+AccessType=rw
+
+;;;;;;;;;;;;;;;;;;
+;; FACTOR GroUP ;;
+;;;;;;;;;;;;;;;;;;
+
+[6089]
+ParameterName=Position notation index
+ObjectType=0x7
+DataType=0x0002
+AccessType=rw
+PDOMapping=1
+
+[608A]
+ParameterName=Position dimension index
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=1
+
+[608B]
+ParameterName=Velocity notation index
+ObjectType=0x7
+DataType=0x0002
+AccessType=rw
+PDOMapping=1
+DefaultValue=0
+
+[608C]
+ParameterName=Velocity dimension index
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=1
+
+[608D]
+ParameterName=Acceleration notation index
+ObjectType=0x7
+DataType=0x0002
+AccessType=rw
+PDOMapping=1
+
+[608E]
+ParameterName=Acceleration dimension index
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=1
+
+
+[608F]
+ParameterName=Position encoder resolution
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[608Fsub0]
+ParameterName=Position encoder resolution/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[608Fsub1]
+ParameterName=Position encoder resolution/Encoder increments
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[608Fsub2]
+ParameterName=Position encoder resolution/Motor revolutions
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+
+[6090]
+ParameterName=Velocity encoder resolution
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6090sub0]
+ParameterName=Velocity encoder resolution/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6090sub1]
+ParameterName=Velocity encoder resolution/Encoder increments per second
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6090sub2]
+ParameterName=Velocity encoder resolution/Motor revolutions per second
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+
+[6091]
+ParameterName=Gear ratio
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6091sub0]
+ParameterName=Gear Ratio/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6091sub1]
+ParameterName=Gear Ratio/Motor revolutions
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6091sub2]
+ParameterName=Gear Ratio/Shaft revolutions
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6092]
+ParameterName=Feed constant
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6092sub0]
+ParameterName=Feed constant/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6092sub1]
+ParameterName=Feed constant/Feed
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6092sub2]
+ParameterName=Feed constant/Shaft revolutions
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+
+[6093]
+ParameterName=Position factor
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6093sub0]
+ParameterName=Position factor/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6093sub1]
+ParameterName=Position factor/Numerator
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6093sub2]
+ParameterName=Position factor/Feed constant
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6094]
+ParameterName=Velocity encoder factor
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6094sub0]
+ParameterName=Velocity encoder factor/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6094sub1]
+ParameterName=Velocity encoder factor/Numerator
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6094sub2]
+ParameterName=Velocity encoder factor/Divisor
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6095]
+ParameterName=Velocity factor 1
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6095sub0]
+ParameterName=Velocity factor 1/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6095sub1]
+ParameterName=Velocity factor 1/Numerator
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6095sub2]
+ParameterName=Velocity factor 1/Divisor
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6096]
+ParameterName=Velocity factor 2
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6096sub0]
+ParameterName=Velocity factor 2/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6096sub1]
+ParameterName=Velocity factor 2/Numerator
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6096sub2]
+ParameterName=Velocity factor 2/Divisor
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6097]
+ParameterName=Acceleration factor
+ObjectType=0x8
+DataType=0x0007
+AccessType=rw
+PDOMapping=0
+
+[6097sub0]
+ParameterName=Acceleration factor/number of entries
+DataType=0x0005
+AccessType=ro
+PDOMapping=0
+DefaultValue=2
+
+[6097sub1]
+ParameterName=Acceleration factor/Numerator
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[6097sub2]
+ParameterName=Acceleration factor/Divisor
+DataType=0x0007
+AccessType=rw
+PDOMapping=1
+DefaultValue=1
+
+[607E]
+ParameterName=Polarity
+ObjectType=0x7
+DataType=0x0005
+AccessType=rw
+PDOMapping=1
+DefaultValue=0
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; Profile Position ;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+[607A]
+ParameterName=Target position
+ObjectType=0x7
+DataType=0x0004
+AccessType=rw
+PDOMapping=1
+
+
+[607B]
+ParameterName=Position range limit
+ObjectType=0x8
+DataType=0x0004
+AccessType=ro
+
+[607Bsub0]
+ParameterName=Position range limit/number of entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+
+[607Bsub1]
+ParameterName=Position range limit/Min position range limit
+DataType=0x000
+AccessType=ro
+
+[607Bsub2]
+ParameterName=Position range limit/Max position range limit
+DataType=0x0004
+AccessType=ro
+
+
+[607D]
+ParameterName=Software position limit
+ObjectType=0x8
+DataType=0x0004
+AccessType=ro
+
+[607Dsub0]
+ParameterName=Software position limit/number of entries
+ObjectType=0x7
+DataType=0x0005
+AccessType=ro
+
+[607Dsub1]
+ParameterName=Software position limit/Min position range limit
+AccessType=rw
+DataType=0x0004
+
+[607Dsub2]
+ParameterName=Software position limit/Max position range limit
+AccessType=rw
+DataType=0x0004
+
+[6081]
+ParameterName=Profile velocity
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+[6082]
+ParameterName=End velocity
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+[6083]
+ParameterName=Profile acceleration
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+[6084]
+ParameterName=Profile deceleration
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+[6085]
+ParameterName=Quick stop deceleration
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+[6086]
+ParameterName=Motion profile type
+ObjectType=0x7
+AccessType=rw
+DataType=0x0003
+PDOMapping=1
+ValueEnum=motion_profile_type
+
+[enum:motion_profile_type]
+; negative values are manufacturer specific
+linear_ramp.value             = 0
+linear_ramp.description       = Trapezoidal profile
+sin2_ramp.value               = 1
+jerk_free_ramp                = 2
+jerk_limited_ramp             = 3
+; values 4+ are reserved
+
+
+[60C5]
+ParameterName=Max deceleration
+ObjectType=0x7
+AccessType=rw
+DataType=0x0007
+PDOMapping=1
+
+;;;;;;;;;;;;;;;;;;;
+;; Velocity Mode ;;
+;;;;;;;;;;;;;;;;;;;
+
+[6042]
+ParameterName=vl target velocity
+ObjectType=0x7
+AccessType=rw
+DataType=0x0003
+PDOMapping=1
+
+[6043]
+ParameterName=vl velocity demand
+ObjectType=0x7
+AccessType=ro
+DataType=0x0003
+PDOMapping=1
+
+
+[6044]
+ParameterName=vl control effort
+ObjectType=0x7
+AccessType=ro
+DataType=0x0003
+PDOMapping=1
+
+[6053]
+ParameterName=vl percentage demand
+ObjectType=0x7
+AccessType=ro
+DataType=0x0003
+PDOMapping=1
+
+[6054]
+ParameterName=vl actual percentage
+ObjectType=0x7
+AccessType=ro
+DataType=0x0003
+PDOMapping=1
+
+[6055]
+ParameterName=vl manipulated percentage
+ObjectType=0x7
+AccessType=ro
+DataType=0x0003
+PDOMapping=1
+
+[604E]
+ParameterName=vl velocity reference
+ObjectType=0x7
+AccessType=ro
+DataType=0x0007
+PDOMapping=1
+
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; Profile Velocity ;;
+;;;;;;;;;;;;;;;;;;;;;;
+
+[606B]
+ParameterName=Velocity demand value
+ObjectType=0x7
+AccessType=ro
+DataType=0x0004
+PDOMapping=1
+
+
+[606F]
+ParameterName=Velocity threshold
+ObjectType=0x7
+AccessType=rw
+DataType=0x0006
+PDOMapping=1
+
+[6070]
+ParameterName=Velocity threshold 0x0100
+ObjectType=0x7
+AccessType=rw
+DataType=0x0006
+PDOMapping=1
+
+[60FF]
+ParameterName=Target velocity
+ObjectType=0x7
+AccessType=rw
+DataType=0x0004
+PDOMapping=1
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Profile Control Function ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[6064]
+ParameterName=Position actual value
+ObjectType=0x7
+AccessType=ro
+DataType=0x0004
+PDOMapping=1
+
+[606C]
+ParameterName=Velocity actual value
+ObjectType=0x7
+AccessType=ro
+DataType=0x0004
+PDOMapping=1
+
+; Local 0x7iables:
+; mode: conf
+; End:

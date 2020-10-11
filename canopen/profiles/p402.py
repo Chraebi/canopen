@@ -205,6 +205,7 @@ class BaseNode402(RemoteNode):
 
     def setup_pdos(self):
         self.pdo.read() # TPDO and RPDO configurations
+        print("hi")
         self._init_tpdo_values()
         self._init_rpdo_pointers()
 
@@ -228,12 +229,18 @@ class BaseNode402(RemoteNode):
                         self.rpdo_pointers[obj.index] = obj
 
     def _check_controlword_configured(self):
+        print(self.rpdo_pointers)
         if 0x6040 not in self.rpdo_pointers: # Controlword
             logger.warning(
                 "Controlword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
                     self.id))
 
     def _check_statusword_configured(self):
+        logger.warning(
+            "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
+                self.id))
+        print(self.tpdo_values)
+        return
         if 0x6041 not in self.tpdo_values: # Statusword
             raise ValueError(
                 "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
@@ -327,9 +334,9 @@ class BaseNode402(RemoteNode):
         - 'OPEN LOOP VECTOR MODE'
         """
         try:
-            if not self.is_op_mode_supported(mode):
-                raise TypeError(
-                    'Operation mode {0} not suppported on node {1}.'.format(mode, self.id))
+            #if not self.is_op_mode_supported(mode):
+            #    raise TypeError(
+            #        'Operation mode {0} not suppported on node {1}.'.format(mode, self.id))
 
             start_state = self.state
 
@@ -405,6 +412,7 @@ class BaseNode402(RemoteNode):
             self.rpdo_pointers[0x6040].raw = value
             self.rpdo_pointers[0x6040].pdo_parent.transmit()
         else:
+            print("fallback active")
             self.sdo[0x6040].raw = value
 
     @property

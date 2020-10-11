@@ -33,6 +33,7 @@ class PdoBase(Mapping):
         return iter(self.map)
 
     def __getitem__(self, key):
+        print(key)
         if isinstance(key, int) and (0x1A00 <= key <= 0x1BFF or   # By TPDO ID (512)
                                      0x1600 <= key <= 0x17FF or   # By RPDO ID (512)
                                      0 < key <= 512):             # By PDO Index

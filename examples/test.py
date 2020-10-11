@@ -1,0 +1,28 @@
+import canopen
+import os
+import can
+import time
+os.system('sudo ip link set can0 type can bitrate 1000000')
+os.system('sudo ifconfig can0 up')
+os.system('sudo ifconfig can0 txqueuelen 1000')
+
+network = canopen.Network()
+network.connect(channel='can0', bustype='socketcan')
+network.scanner.search()
+time.sleep(0.05)
+for node_id in network.scanner.nodes:
+    print(node_id)
+node=network.add_node(12, 'test.eds')
+local_node=canopen.LocalNode(1, 'test.eds')
+network.add_node(local_node)
+for node_id in network:
+    print(network[node_id])
+#node.sdo.download(0x60FF, 00, b'\x84\x00')
+#device_type_data = node.sdo.upload(0x1007, 0)
+#print(device_type_data)
+#network.send_message(0x60C, [0x23, 0xFF, 0x60, 0x00, 0x42, 0x05, 0x00, 0x00]) #set velocity
+network.send_message(0x60C, [0x40, 0x41, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00]) #Get Status
+#network.send_message(0x0, [0x1, 0])
+#network.sync.start(0.01)
+#node.tpdo.read()
+#node.rpdo.read()
