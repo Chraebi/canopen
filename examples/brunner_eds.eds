@@ -330,6 +330,13 @@ DefaultValue=255
 LowLimit=0
 HighLimit=255
 
+[1800sub5]
+ParameterName=Event timer
+ObjectType=7
+DataType=0x6
+AccessType=RW
+PDOMapping=0
+
 [1801]
 ParameterName=Transmit PDO 1 communication parameters
 ObjectType=9
@@ -362,6 +369,14 @@ PDOMapping=0
 DefaultValue=255
 LowLimit=0
 HighLimit=255
+
+[1801sub5]
+ParameterName=Event timer
+ObjectType=7
+DataType=0x6
+AccessType=RW
+PDOMapping=0
+
 
 [1802]
 ParameterName=Transmit PDO 2 communication parameters
@@ -396,38 +411,12 @@ DefaultValue=0
 LowLimit=0
 HighLimit=255
 
-[1803]
-ParameterName=Transmit PDO 3 communication parameters
-ObjectType=9
-SubNumber=3
-
-[1803sub0]
-ParameterName=Number of Entries
+[1802sub5]
+ParameterName=Event timer
 ObjectType=7
-DataType=5
-AccessType=ro
-PDOMapping=0
-DefaultValue=2
-LowLimit=2
-HighLimit=2
-
-[1803sub1]
-ParameterName=COB-ID use by TPDO 4
-ObjectType=7
-DataType=7
+DataType=0x6
 AccessType=RW
 PDOMapping=0
-DefaultValue=$NODEID+1152
-
-[1803sub2]
-ParameterName=Transmission type TPDO 4
-ObjectType=7
-DataType=5
-AccessType=RW
-PDOMapping=0
-DefaultValue=0
-LowLimit=0
-HighLimit=255
 
 [1a00]
 ParameterName=Transmit PDO 0 mapping parameter

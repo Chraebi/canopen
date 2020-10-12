@@ -53,6 +53,7 @@ class PdoBase(Mapping):
     def read(self):
         """Read PDO configuration from node using SDO."""
         for pdo_map in self.map.values():
+            print(pdo_map)
             pdo_map.read()
 
     def save(self):

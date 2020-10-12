@@ -62,7 +62,7 @@ class SdoServer(SdoBase):
         self._subindex = subindex
         res_command = RESPONSE_UPLOAD | SIZE_SPECIFIED
         response = bytearray(8)
-
+        print(request)
         data = self._node.get_data(index, subindex, check_readable=True)
         size = len(data)
         if size <= 4:

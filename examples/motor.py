@@ -27,7 +27,7 @@ try:
 
     # Reset network
     node.nmt.state = 'RESET COMMUNICATION'
-    node.nmt.state = 'RESET'
+    #node.nmt.state = 'RESET'
     node.nmt.wait_for_bootup(15)
 
     print('node state 1) = {0}'.format(node.nmt.state))
@@ -75,7 +75,7 @@ try:
 
     print('node state 4) = {0}'.format(node.nmt.state))
     node.op_mode = "PROFILED VELOCITY"
-    node.op_mode = "PROFILED POSITION"
+    #node.op_mode = "PROFILED POSITION"
     # Read PDO configuration from node
     node.tpdo.read()
     # Re-map TxPDO1
@@ -90,15 +90,15 @@ try:
     # publish the a value to the control word (in this case reset the fault at the motors)
 
     node.rpdo.read()
-    node.rpdo[1]['Controlword'].raw = 0x80
-    node.rpdo[1].transmit()
-    node.rpdo[1]['Controlword'].raw = 0x81
-    node.rpdo[1].transmit()
+    #node.rpdo[1]['Controlword'].raw = 0x80
+    #node.rpdo[1].transmit()
+    #node.rpdo[1]['Controlword'].raw = 0x81
+    #node.rpdo[1].transmit()
 
     node.state = 'READY TO SWITCH ON'
     node.state = 'SWITCHED ON'
 
-    node.rpdo.export('database.dbc')
+    #node.rpdo.export('database.dbc')
 
     # -----------------------------------------------------------------------------------------
 
@@ -125,7 +125,7 @@ try:
             raise Exception('Timeout when trying to change state')
         time.sleep(0.001)
 
-    print('Node Status {0}'.format(node.powerstate_402.state))
+    #print('Node Status {0}'.format(node.powerstate_402.state))
 
     # -----------------------------------------------------------------------------------------
     node.nmt.start_node_guarding(0.01)
@@ -157,8 +157,8 @@ except Exception as e:
 finally:
     # Disconnect from CAN bus
     print('going to exit... stopping...')
+    node.state = 'READY TO SWITCH ON'
     if network:
-
         for node_id in network:
             node = network[node_id]
             node.nmt.state = 'PRE-OPERATIONAL'

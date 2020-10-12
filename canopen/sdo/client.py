@@ -116,6 +116,7 @@ class SdoClient(SdoBase):
             When node responds with an error.
         """
         fp = self.open(index, subindex, buffering=0)
+        print("index and sub", index, subindex)
         size = fp.size
         data = fp.read()
         if size is None:
