@@ -205,7 +205,6 @@ class BaseNode402(RemoteNode):
 
     def setup_pdos(self):
         self.pdo.read() # TPDO and RPDO configurations
-        print("hi")
         self._init_tpdo_values()
         self._init_rpdo_pointers()
 
@@ -229,17 +228,12 @@ class BaseNode402(RemoteNode):
                         self.rpdo_pointers[obj.index] = obj
 
     def _check_controlword_configured(self):
-        print(self.rpdo_pointers)
         if 0x6040 not in self.rpdo_pointers: # Controlword
             logger.warning(
                 "Controlword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
                     self.id))
 
     def _check_statusword_configured(self):
-        logger.warning(
-            "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
-                self.id))
-        print(self.tpdo_values)
         if 0x6041 not in self.tpdo_values: # Statusword
             raise ValueError(
                 "Statusword not configured in node {0}'s PDOs. Using SDOs can cause slow performance.".format(
@@ -365,7 +359,7 @@ class BaseNode402(RemoteNode):
 
     def _clear_target_values(self):
         # [target velocity, target position, target torque]
-        for target_index in [0x60FF, 0x607A, 0x6071]:
+        for target_index in [0x60FF, 0x607A,0x607A, 0x6071]:
             if target_index in self.sdo.keys():
                 self.sdo[target_index].raw = 0
 

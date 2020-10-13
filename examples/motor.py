@@ -25,7 +25,7 @@ try:
     # network.add_node(34, 'test.eds')
     # node = network[34]
 
-    # Reset network
+    # Reset network, change states
     node.nmt.state = 'RESET COMMUNICATION'
     #node.nmt.state = 'RESET'
     node.nmt.wait_for_bootup(15)
@@ -81,7 +81,8 @@ try:
     # Re-map TxPDO1
     node.tpdo[1].clear()
     node.tpdo[1].add_variable('Statusword')
-    node.tpdo[1].add_variable('Velocity actual value')
+    #node.tpdo[1].add_variable('Velocity actual value')
+    node.tpdo[1].add_variable('Position actual value')
     node.tpdo[1].trans_type = 1
     node.tpdo[1].event_timer = 0
     node.tpdo[1].enabled = True
@@ -103,7 +104,6 @@ try:
     # -----------------------------------------------------------------------------------------
 
     print('Node booted up')
-
     timeout = time.time() + 15
     node.state = 'READY TO SWITCH ON'
     while node.state != 'READY TO SWITCH ON':
@@ -129,6 +129,9 @@ try:
 
     # -----------------------------------------------------------------------------------------
     node.nmt.start_node_guarding(0.01)
+    #
+    node.sdo[0x607A].raw = 20000
+    node.sdo[0x60FF].raw = -800
     while True:
         try:
             network.check()
@@ -137,15 +140,18 @@ try:
 
         # Read a value from TxPDO1
         node.tpdo[1].wait_for_reception()
-        speed = node.tpdo[1]['Velocity actual value'].phys
+        #speed = node.tpdo[1]['Velocity actual value'].phys
+        position = node.tpdo[1]['Position actual value'].phys
 
         # Read the state of the Statusword
         statusword = node.sdo[0x6041].raw
 
         print('statusword: {0}'.format(statusword))
-        print('VEL: {0}'.format(speed))
-
+        print('VEL: {0}'.format(position))
+        print(node.op_mode)
         time.sleep(0.01)
+        if position <= 000000:
+            break
 
 except KeyboardInterrupt:
     pass
@@ -158,6 +164,7 @@ finally:
     # Disconnect from CAN bus
     print('going to exit... stopping...')
     node.state = 'READY TO SWITCH ON'
+    #node.state = 'QUICK STOP ACTIVE'
     if network:
         for node_id in network:
             node = network[node_id]
