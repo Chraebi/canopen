@@ -145,7 +145,6 @@ class RemoteNode(BaseNode):
     def load_configuration(self):
         ''' Load the configuration of the node from the object dictionary.'''
         for obj in self.object_dictionary.values():
-            print(obj.name)
             if isinstance(obj, Record) or isinstance(obj, Array):
                 for subobj in obj.values():
                     if isinstance(subobj, Variable) and subobj.writable and (subobj.value is not None):

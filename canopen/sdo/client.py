@@ -65,7 +65,6 @@ class SdoClient(SdoBase):
         try:
             response = self.responses.get(
                 block=True, timeout=self.RESPONSE_TIMEOUT)
-            print("Response: ", response)
         except queue.Empty:
             raise SdoCommunicationError("No SDO response received")
         res_command, = struct.unpack_from("B", response)
@@ -116,7 +115,6 @@ class SdoClient(SdoBase):
             When node responds with an error.
         """
         fp = self.open(index, subindex, buffering=0)
-        print("index and sub", index, subindex)
         size = fp.size
         data = fp.read()
         if size is None:
