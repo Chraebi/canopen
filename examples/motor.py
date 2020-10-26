@@ -28,7 +28,7 @@ try:
 
         # Reset network, change states
         node.nmt.state = 'RESET COMMUNICATION'
-        node.nmt.state = 'RESET'
+        #node.nmt.state = 'RESET'
         node.nmt.wait_for_bootup(15)
 
         print('node state 1) = {0}'.format(node.nmt.state))
@@ -71,12 +71,11 @@ try:
         supported_mode = node.sdo[0x6502].raw
         motion_profile = node.sdo[0x6086].raw
         print("-----------------------------------")
-        node.sdo[0x607A].raw = 2000000  # Target Post
         node.state = 'SWITCH ON DISABLED'
 
         print('node state 4) = {0}'.format(node.nmt.state))
-        node.op_mode = "PROFILED VELOCITY"
-        # node.op_mode = "PROFILED POSITION"
+        #node.op_mode = "PROFILED VELOCITY"
+        node.op_mode = "PROFILED POSITION"
         # Read PDO configuration from node
         node.tpdo.read()
         # Re-map TxPDO1
@@ -134,13 +133,22 @@ try:
     #node1.nmt.start_node_guarding(0.01)
     #node.nmt.start_node_guarding(0.01)
     #
-    node1.sdo[0x6086].raw = 1
-    node2.sdo[0x6086].raw = 1
-    node1.sdo[0x6081].raw = 500
-    node2.sdo[0x6081].raw = 500
-    node1.sdo[0x60FF].raw = 800
-    node2.sdo[0x60FF].raw = 800
-    # node.sdo[0x607A].raw = 2000000 # Target Post
+    #node1.sdo[0x6086].raw = 1
+    #node2.sdo[0x6086].raw = 1
+    node1.sdo[0x6083].raw = 500  # target acc
+    node2.sdo[0x6083].raw = 500
+    node1.sdo[0x6084].raw = 500  # target dec
+    node2.sdo[0x6084].raw = 500
+    node1.sdo[0x6081].raw = 1500 # target velocity
+    node2.sdo[0x6081].raw = 1500
+    #node1.sdo[0x60FF].raw = 800
+    #node2.sdo[0x60FF].raw = 800
+    node1.sdo[0x607A].raw = -2000000 # Target Post
+    node2.sdo[0x607A].raw = -2000000  # Target Post
+    #node1.sdo[0x607A].raw = 0  # Target Post
+    #node2.sdo[0x607A].raw = 0  # Target Post
+    node1.sdo[0x6040].raw = 127 # 127 relative pos, 63 abbs?
+    node2.sdo[0x6040].raw = 127
     while True:
         try:
             network.check()
@@ -148,16 +156,20 @@ try:
             break
 
         # Read a value from TxPDO1
-        #node.tpdo[1].wait_for_reception()
+        node1.tpdo[1].wait_for_reception()
+        node2.tpdo[1].wait_for_reception()
         # speed = node.tpdo[1]['Velocity actual value'].phys
-        #position = node.tpdo[1]['Position actual value'].phys
+        position1 = node1.tpdo[1]['Position actual value'].phys
+        position2 = node2.tpdo[1]['Position actual value'].phys
 
         # Read the state of the Statusword
         #statusword = node.sdo[0x6041].raw
+        print("pos 1: ", position1)
+        print("pos 2: ", position2)
 
         #print('statusword: {0}'.format(statusword))
         #print('VEL: {0}'.format(position))
-        #print(node.op_mode)
+        print(node.sdo[0x6061].raw)
         time.sleep(0.01)
 
 except KeyboardInterrupt:

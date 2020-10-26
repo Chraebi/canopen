@@ -359,7 +359,7 @@ class BaseNode402(RemoteNode):
 
     def _clear_target_values(self):
         # [target velocity, target position, target torque]
-        for target_index in [0x60FF, 0x607A,0x607A, 0x6071]:
+        for target_index in [0x60FF, 0x607A, 0x607A, 0x6071]:
             if target_index in self.sdo.keys():
                 self.sdo[target_index].raw = 0
 
