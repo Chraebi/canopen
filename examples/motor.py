@@ -1,9 +1,16 @@
+#!/usr/bin/python3
 import canopen
 import sys
 import os
 import traceback
-
+import RPi.GPIO as GPIO
 import time
+
+GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
+
+GPIO.setup(24, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
+GPIO.setup(22, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
+GPIO.setup(23, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
@@ -24,11 +31,12 @@ try:
     node1 = canopen.BaseNode402(12, 'brunner_eds.eds')
     node2 = canopen.BaseNode402(15, 'brunner_eds.eds')
     for node in [node1, node2]:
+        print("setup: ", node.id)
         network.add_node(node)
 
         # Reset network, change states
         node.nmt.state = 'RESET COMMUNICATION'
-        #node.nmt.state = 'RESET'
+        node.nmt.state = 'RESET'
         node.nmt.wait_for_bootup(15)
 
         print('node state 1) = {0}'.format(node.nmt.state))
@@ -74,8 +82,8 @@ try:
         node.state = 'SWITCH ON DISABLED'
 
         print('node state 4) = {0}'.format(node.nmt.state))
-        #node.op_mode = "PROFILED VELOCITY"
-        node.op_mode = "PROFILED POSITION"
+        node.op_mode = "PROFILED VELOCITY"
+        # node.op_mode = "PROFILED POSITION"
         # Read PDO configuration from node
         node.tpdo.read()
         # Re-map TxPDO1
@@ -130,25 +138,47 @@ try:
     # print('Node Status {0}'.format(node.powerstate_402.state))
 
     # -----------------------------------------------------------------------------------------
-    #node1.nmt.start_node_guarding(0.01)
-    #node.nmt.start_node_guarding(0.01)
+    # node1.nmt.start_node_guarding(0.01)
+    # node.nmt.start_node_guarding(0.01)
     #
-    #node1.sdo[0x6086].raw = 1
-    #node2.sdo[0x6086].raw = 1
+    # node1.sdo[0x6086].raw = 1
+    # node2.sdo[0x6086].raw = 1
     node1.sdo[0x6083].raw = 500  # target acc
     node2.sdo[0x6083].raw = 500
     node1.sdo[0x6084].raw = 500  # target dec
     node2.sdo[0x6084].raw = 500
-    node1.sdo[0x6081].raw = 1500 # target velocity
-    node2.sdo[0x6081].raw = 1500
-    #node1.sdo[0x60FF].raw = 800
-    #node2.sdo[0x60FF].raw = 800
-    node1.sdo[0x607A].raw = -2000000 # Target Post
-    node2.sdo[0x607A].raw = -2000000  # Target Post
-    #node1.sdo[0x607A].raw = 0  # Target Post
-    #node2.sdo[0x607A].raw = 0  # Target Post
-    node1.sdo[0x6040].raw = 127 # 127 relative pos, 63 abbs?
-    node2.sdo[0x6040].raw = 127
+    node1.sdo[0x6081].raw = 0  # target velocity
+    node2.sdo[0x6081].raw = 0
+    # node1.sdo[0x60FF].raw = 800
+    # node2.sdo[0x60FF].raw = 800
+    # node1.sdo[0x607A].raw = -2000000 # Target Post
+    # node2.sdo[0x607A].raw = -2000000  # Target Post
+    node1.sdo[0x607A].raw = 2000000  # Target Post
+    node2.sdo[0x607A].raw = 2000000  # Target Post
+
+
+    # node1.sdo[0x6040].raw = 127  # 127 relative pos, 63 abbs?
+    # node2.sdo[0x6040].raw = 127
+
+    def up(channel):
+        node1.sdo[0x60FF].raw = 200
+        node2.sdo[0x60FF].raw = 200
+
+
+    def down(channel):
+        node1.sdo[0x60FF].raw = 1200
+        node2.sdo[0x60FF].raw = 1200
+
+
+    def stop(channel):
+        print("Stop", channel)
+
+
+    # Interrupt-Event hinzufuegen, steigende Flanke
+    GPIO.add_event_detect(22, GPIO.RISING, callback=up, bouncetime=250)
+    GPIO.add_event_detect(23, GPIO.RISING, callback=down, bouncetime=250)
+    GPIO.add_event_detect(24, GPIO.RISING, callback=stop, bouncetime=250)
+
     while True:
         try:
             network.check()
@@ -163,22 +193,24 @@ try:
         position2 = node2.tpdo[1]['Position actual value'].phys
 
         # Read the state of the Statusword
-        #statusword = node.sdo[0x6041].raw
+        # statusword = node.sdo[0x6041].raw
         print("pos 1: ", position1)
         print("pos 2: ", position2)
 
-        #print('statusword: {0}'.format(statusword))
-        #print('VEL: {0}'.format(position))
+        # print('statusword: {0}'.format(statusword))
+        # print('VEL: {0}'.format(position))
         print(node.sdo[0x6061].raw)
         time.sleep(0.01)
 
 except KeyboardInterrupt:
+
     pass
 except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
     traceback.print_exc()
+
 finally:
     # Disconnect from CAN bus
     print('going to exit... stopping...')
@@ -192,5 +224,6 @@ finally:
             node.nmt.stop_node_guarding()
         network.sync.stop()
         network.disconnect()
-
+    GPIO.cleanup()
+    print("\nBye")
     os.system('sudo ifconfig can0 down')
