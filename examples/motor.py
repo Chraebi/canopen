@@ -11,7 +11,7 @@ GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
 GPIO.setup(24, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(22, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(23, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
-
+GPIO.setup(27, GPIO.IN)  # Schlüssel
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
@@ -161,23 +161,35 @@ try:
     # node2.sdo[0x6040].raw = 127
 
     def up(channel):
-        node1.sdo[0x60FF].raw = 200
-        node2.sdo[0x60FF].raw = 200
+        print("Direction Change")
+        node1.sdo[0x60FF].raw = node1.sdo[0x60FF].raw * (-1)
+        node2.sdo[0x60FF].raw = node2.sdo[0x60FF].raw * (-1)
 
 
     def down(channel):
-        node1.sdo[0x60FF].raw = 1200
-        node2.sdo[0x60FF].raw = 1200
+        print("Start")
+        node1.sdo[0x60FF].raw = 800
+        node2.sdo[0x60FF].raw = 800
 
 
     def stop(channel):
-        print("Stop", channel)
+        print("Stop")
+        node1.sdo[0x60FF].raw = 0
+        node2.sdo[0x60FF].raw = 0
 
 
-    # Interrupt-Event hinzufuegen, steigende Flanke
+    def enable_operation(channel):
+        if GPIO.input(27):  # if port 25 == 1
+            print("Rising edge detected on 27")
+        else:  # if port 25 != 1
+            print("Falling edge detected on 25")
+
+
+            # Interrupt-Event hinzufuegen, steigende Flanke
     GPIO.add_event_detect(22, GPIO.RISING, callback=up, bouncetime=250)
     GPIO.add_event_detect(23, GPIO.RISING, callback=down, bouncetime=250)
     GPIO.add_event_detect(24, GPIO.RISING, callback=stop, bouncetime=250)
+    GPIO.add_event_detect(27, GPIO.BOTH, callback=enable_operation, bouncetime=250)
 
     while True:
         try:
@@ -216,6 +228,8 @@ finally:
     print('going to exit... stopping...')
     node1.state = 'READY TO SWITCH ON'
     node2.state = 'READY TO SWITCH ON'
+    node1.sdo[0x60FF].raw = 0
+    node2.sdo[0x60FF].raw = 0
     # node.state = 'QUICK STOP ACTIVE'
     if network:
         for node_id in network:
