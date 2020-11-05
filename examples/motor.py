@@ -11,11 +11,19 @@ GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
 GPIO.setup(24, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(22, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(23, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
+GPIO.setup(25, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(27, GPIO.IN)  # Schlüssel
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
 os.system('sudo ifconfig can0 txqueuelen 1000')
+running = False
+updated_velocity = False
+upwards = False
+enabled = 0
+velocity = 0
+
+fast = False
 try:
 
     # Start with creating a network representing one CAN bus
@@ -113,27 +121,50 @@ try:
 
         print('Node booted up')
 
-    for node in [node1, node2]:
-        timeout = time.time() + 15
-        node.state = 'READY TO SWITCH ON'
-        while node.state != 'READY TO SWITCH ON':
-            if time.time() > timeout:
-                raise Exception('Timeout when trying to change state')
-            time.sleep(0.001)
 
-        timeout = time.time() + 15
-        node.state = 'SWITCHED ON'
-        while node.state != 'SWITCHED ON':
-            if time.time() > timeout:
-                raise Exception('Timeout when trying to change state')
-            time.sleep(0.001)
+    def enable_operation():
+        for node in [node1, node2]:
+            timeout = time.time() + 15
+            node.state = 'READY TO SWITCH ON'
+            while node.state != 'READY TO SWITCH ON':
+                if time.time() > timeout:
+                    raise Exception('Timeout when trying to change state')
+                time.sleep(0.001)
 
-        timeout = time.time() + 15
-        node.state = 'OPERATION ENABLED'
-        while node.state != 'OPERATION ENABLED':
-            if time.time() > timeout:
-                raise Exception('Timeout when trying to change state')
-            time.sleep(0.001)
+            timeout = time.time() + 15
+            node.state = 'SWITCHED ON'
+            while node.state != 'SWITCHED ON':
+                if time.time() > timeout:
+                    raise Exception('Timeout when trying to change state')
+                time.sleep(0.001)
+
+            timeout = time.time() + 15
+            node.state = 'OPERATION ENABLED'
+            while node.state != 'OPERATION ENABLED':
+                if time.time() > timeout:
+                    raise Exception('Timeout when trying to change state')
+                time.sleep(0.001)
+
+
+    def disable_operation():
+        for node in [node1, node2]:
+            timeout = time.time() + 15
+            node.state = 'READY TO SWITCH ON'
+            while node.state != 'READY TO SWITCH ON':
+                if time.time() > timeout:
+                    raise Exception('Timeout when trying to change state')
+                time.sleep(0.001)
+
+
+    # enable_operation()
+    def change_state(channel):
+        if GPIO.input(27):  # if port 25 == 1
+            disable_operation()
+            print("Rising edge detected on 27")
+        else:  # if port 25 != 1
+            enable_operation()
+            print("Falling edge detected on 25")
+
 
     # print('Node Status {0}'.format(node.powerstate_402.state))
 
@@ -160,59 +191,85 @@ try:
     # node1.sdo[0x6040].raw = 127  # 127 relative pos, 63 abbs?
     # node2.sdo[0x6040].raw = 127
 
-    def up(channel):
+    def up_vel(channel):
+        global upwards
+        upwards = True
         print("Direction Change")
-        node1.sdo[0x60FF].raw = node1.sdo[0x60FF].raw * (-1)
-        node2.sdo[0x60FF].raw = node2.sdo[0x60FF].raw * (-1)
+        node1.sdo[0x60FF].raw = velocity
+        node2.sdo[0x60FF].raw = velocity
 
 
-    def down(channel):
+    def down_vel(channel):
+        global upwards
+        upwards = False
         print("Start")
-        node1.sdo[0x60FF].raw = 800
-        node2.sdo[0x60FF].raw = 800
+        node1.sdo[0x60FF].raw = -velocity
+        node2.sdo[0x60FF].raw = -velocity
 
 
     def stop(channel):
-        print("Stop")
+        print("Start")
+
         node1.sdo[0x60FF].raw = 0
         node2.sdo[0x60FF].raw = 0
 
-
-    def enable_operation(channel):
-        if GPIO.input(27):  # if port 25 == 1
-            print("Rising edge detected on 27")
-        else:  # if port 25 != 1
-            print("Falling edge detected on 25")
+        # Interrupt-Event hinzufuegen, steigende Flanke
 
 
-            # Interrupt-Event hinzufuegen, steigende Flanke
-    GPIO.add_event_detect(22, GPIO.RISING, callback=up, bouncetime=250)
-    GPIO.add_event_detect(23, GPIO.RISING, callback=down, bouncetime=250)
-    GPIO.add_event_detect(24, GPIO.RISING, callback=stop, bouncetime=250)
-    GPIO.add_event_detect(27, GPIO.BOTH, callback=enable_operation, bouncetime=250)
+    def change_vel(channel):
+        global fast
+        global velocity
+        global updated_velocity
+        if fast:
+            velocity = 400
+            fast = not fast
+        else:
+            velocity = 1000
+            fast = not fast
+        updated_velocity = True
 
+
+    GPIO.add_event_detect(23, GPIO.RISING, callback=change_vel, bouncetime=250)
+    GPIO.add_event_detect(27, GPIO.BOTH, callback=change_state, bouncetime=250)
+    stop(None)
     while True:
         try:
             network.check()
         except Exception:
             break
+        if node1.state == 'OPERATION ENABLED' and node2.state == 'OPERATION ENABLED':
+            # Read a value from TxPDO1
+            node1.tpdo[1].wait_for_reception()
+            node2.tpdo[1].wait_for_reception()
+            # speed = node.tpdo[1]['Velocity actual value'].phys
+            position1 = node1.tpdo[1]['Position actual value'].phys
+            position2 = node2.tpdo[1]['Position actual value'].phys
+            up = GPIO.input(24)
+            down = GPIO.input(22)
+            if (up == 0 and not running) or (updated_velocity and running and upwards):
+                up_vel(channel=None)
+                running = True
+                updated_velocity = False
+            if down == 0 and not running or (updated_velocity and running and not upwards):
+                down_vel(channel=None)
+                running = True
+                updated_velocity = False
+            elif up == 1 and down == 1 and running:
+                stop(channel=None)
+                running = False
 
-        # Read a value from TxPDO1
-        node1.tpdo[1].wait_for_reception()
-        node2.tpdo[1].wait_for_reception()
-        # speed = node.tpdo[1]['Velocity actual value'].phys
-        position1 = node1.tpdo[1]['Position actual value'].phys
-        position2 = node2.tpdo[1]['Position actual value'].phys
+            # Read the state of the Statusword
+            # statusword = node.sdo[0x6041].raw
+            print("pos 1: ", position1)
+            print("pos 2: ", position2)
 
-        # Read the state of the Statusword
-        # statusword = node.sdo[0x6041].raw
-        print("pos 1: ", position1)
-        print("pos 2: ", position2)
-
-        # print('statusword: {0}'.format(statusword))
-        # print('VEL: {0}'.format(position))
-        print(node.sdo[0x6061].raw)
-        time.sleep(0.01)
+            # print('statusword: {0}'.format(statusword))
+            # print('VEL: {0}'.format(position))
+            print(node.sdo[0x6061].raw)
+            time.sleep(0.01)
+        else:
+            print("standby")
+            time.sleep(1)
 
 except KeyboardInterrupt:
 
