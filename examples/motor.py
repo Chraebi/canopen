@@ -6,8 +6,9 @@ import traceback
 import RPi.GPIO as GPIO
 import time
 
-GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
 
+# Set up GPIO
+GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
 GPIO.setup(24, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(22, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
 GPIO.setup(23, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
@@ -17,12 +18,10 @@ GPIO.setup(27, GPIO.IN)  # Schlüssel
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
 os.system('sudo ifconfig can0 txqueuelen 1000')
+#set up global variables
 running = False
 updated_velocity = False
 upwards = False
-enabled = 0
-velocity = 0
-
 fast = False
 try:
 
@@ -36,8 +35,8 @@ try:
 
     # Add some nodes with corresponding Object Dictionaries
     # node = canopen.BaseNode402(12, 'sample.eds')
-    node1 = canopen.BaseNode402(12, 'brunner_eds.eds')
-    node2 = canopen.BaseNode402(15, 'brunner_eds.eds')
+    node1 = canopen.BaseNode402(12, '/home/pi/canopen/examples/brunner_eds.eds')
+    node2 = canopen.BaseNode402(15, '/home/pi/canopen/examples/brunner_eds.eds')
     for node in [node1, node2]:
         print("setup: ", node.id)
         network.add_node(node)
@@ -157,12 +156,14 @@ try:
 
 
     # enable_operation()
-    def change_state(channel):
+    def quick_stop(channel):
         if GPIO.input(27):  # if port 25 == 1
-            disable_operation()
+            stop(None)
+            enable_operation()
             print("Rising edge detected on 27")
         else:  # if port 25 != 1
-            enable_operation()
+            stop(None)
+            disable_operation()
             print("Falling edge detected on 25")
 
 
@@ -174,18 +175,16 @@ try:
     #
     # node1.sdo[0x6086].raw = 1
     # node2.sdo[0x6086].raw = 1
-    node1.sdo[0x6083].raw = 500  # target acc
-    node2.sdo[0x6083].raw = 500
-    node1.sdo[0x6084].raw = 500  # target dec
-    node2.sdo[0x6084].raw = 500
-    node1.sdo[0x6081].raw = 0  # target velocity
-    node2.sdo[0x6081].raw = 0
+    node1.sdo[0x6083].raw = 800  # target acc
+    node2.sdo[0x6083].raw = 800
+    node1.sdo[0x6084].raw = 800  # target dec
+    node2.sdo[0x6084].raw = 800
     # node1.sdo[0x60FF].raw = 800
     # node2.sdo[0x60FF].raw = 800
     # node1.sdo[0x607A].raw = -2000000 # Target Post
     # node2.sdo[0x607A].raw = -2000000  # Target Post
-    node1.sdo[0x607A].raw = 2000000  # Target Post
-    node2.sdo[0x607A].raw = 2000000  # Target Post
+    #node1.sdo[0x607A].raw = 2000000  # Target Post
+    #node2.sdo[0x607A].raw = 2000000  # Target Post
 
 
     # node1.sdo[0x6040].raw = 127  # 127 relative pos, 63 abbs?
@@ -194,7 +193,7 @@ try:
     def up_vel(channel):
         global upwards
         upwards = True
-        print("Direction Change")
+        print("-------Upwards------")
         node1.sdo[0x60FF].raw = velocity
         node2.sdo[0x60FF].raw = velocity
 
@@ -202,14 +201,13 @@ try:
     def down_vel(channel):
         global upwards
         upwards = False
-        print("Start")
+        print("-------Downwards------")
         node1.sdo[0x60FF].raw = -velocity
         node2.sdo[0x60FF].raw = -velocity
 
 
     def stop(channel):
-        print("Start")
-
+        print("Stop")
         node1.sdo[0x60FF].raw = 0
         node2.sdo[0x60FF].raw = 0
 
@@ -220,18 +218,21 @@ try:
         global fast
         global velocity
         global updated_velocity
+        print("Velocity Change")
         if fast:
-            velocity = 400
+            velocity = 800
             fast = not fast
         else:
-            velocity = 1000
+            velocity = 1600
             fast = not fast
         updated_velocity = True
 
 
     GPIO.add_event_detect(23, GPIO.RISING, callback=change_vel, bouncetime=250)
-    GPIO.add_event_detect(27, GPIO.BOTH, callback=change_state, bouncetime=250)
+    GPIO.add_event_detect(27, GPIO.BOTH, callback=quick_stop, bouncetime=250)
+    velocity = 800
     stop(None)
+    quick_stop(None)
     while True:
         try:
             network.check()
@@ -248,28 +249,29 @@ try:
             down = GPIO.input(22)
             if (up == 0 and not running) or (updated_velocity and running and upwards):
                 up_vel(channel=None)
+                print("up_btn")
                 running = True
                 updated_velocity = False
-            if down == 0 and not running or (updated_velocity and running and not upwards):
+            elif (down == 0 and not running) or (updated_velocity and running and not upwards):
+                print("dn_btn")
                 down_vel(channel=None)
                 running = True
                 updated_velocity = False
             elif up == 1 and down == 1 and running:
+                print("no_btn")
                 stop(channel=None)
                 running = False
 
             # Read the state of the Statusword
             # statusword = node.sdo[0x6041].raw
-            print("pos 1: ", position1)
-            print("pos 2: ", position2)
+            print("pos: ", position1, position2)
 
             # print('statusword: {0}'.format(statusword))
             # print('VEL: {0}'.format(position))
-            print(node.sdo[0x6061].raw)
             time.sleep(0.01)
         else:
             print("standby")
-            time.sleep(1)
+            time.sleep(5)
 
 except KeyboardInterrupt:
 
