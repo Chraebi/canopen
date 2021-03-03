@@ -9,11 +9,13 @@ import time
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
-GPIO.setup(24, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
-GPIO.setup(22, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
-GPIO.setup(23, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
-GPIO.setup(25, GPIO.IN)  # Pin24 als digitalen Eingang festlegen
-GPIO.setup(27, GPIO.IN)  # Schlüssel
+GPIO.setup(5, GPIO.IN)  # Pin5 als digitalen Eingang festlegen, rauf
+GPIO.setup(6, GPIO.IN)  # Pin6 als digitalen Eingang festlegen, runter
+GPIO.setup(13, GPIO.IN)  # Pin13 als digitalen Eingang festlegen, Geschwindigkeit
+GPIO.setup(22, GPIO.OUT)  # Pin22 als digitalen Ausgang festlegen, LED orange, Geschwindigkeit
+GPIO.setup(23, GPIO.OUT)  # Pin23 als digitalen Ausgang festlegen, LED grün
+GPIO.output(23, 0)
+GPIO.output(22, 1)
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
@@ -155,7 +157,9 @@ try:
                 time.sleep(0.001)
 
 
-    # enable_operation()
+    enable_operation()
+
+
     def quick_stop(channel):
         if GPIO.input(27):  # if port 25 == 1
             stop(None)
@@ -190,6 +194,7 @@ try:
     # node1.sdo[0x6040].raw = 127  # 127 relative pos, 63 abbs?
     # node2.sdo[0x6040].raw = 127
 
+
     def up_vel(channel):
         global upwards
         upwards = True
@@ -210,7 +215,6 @@ try:
         print("Stop")
         node1.sdo[0x60FF].raw = 0
         node2.sdo[0x60FF].raw = 0
-
         # Interrupt-Event hinzufuegen, steigende Flanke
 
 
@@ -222,17 +226,19 @@ try:
         if fast:
             velocity = 800
             fast = not fast
+            GPIO.output(22, 0)
         else:
             velocity = 1600
             fast = not fast
+            GPIO.output(22, 1)
         updated_velocity = True
 
 
-    GPIO.add_event_detect(23, GPIO.RISING, callback=change_vel, bouncetime=250)
-    GPIO.add_event_detect(27, GPIO.BOTH, callback=quick_stop, bouncetime=250)
+    GPIO.add_event_detect(13, GPIO.RISING, callback=change_vel, bouncetime=250)
     velocity = 800
+    GPIO.output(23, 1)
     stop(None)
-    quick_stop(None)
+    #quick_stop(None)
     while True:
         try:
             network.check()
@@ -245,8 +251,8 @@ try:
             # speed = node.tpdo[1]['Velocity actual value'].phys
             position1 = node1.tpdo[1]['Position actual value'].phys
             position2 = node2.tpdo[1]['Position actual value'].phys
-            up = GPIO.input(24)
-            down = GPIO.input(22)
+            up = GPIO.input(5)
+            down = GPIO.input(6)
             if (up == 0 and not running) or (updated_velocity and running and upwards):
                 up_vel(channel=None)
                 print("up_btn")
@@ -264,18 +270,19 @@ try:
 
             # Read the state of the Statusword
             # statusword = node.sdo[0x6041].raw
-            print("pos: ", position1, position2)
+            # print("pos: ", position1, position2)
 
             # print('statusword: {0}'.format(statusword))
             # print('VEL: {0}'.format(position))
             time.sleep(0.01)
         else:
+            GPIO.output(22, 1)
             print("standby")
             time.sleep(5)
 
 except KeyboardInterrupt:
-
     pass
+
 except Exception as e:
     exc_type, exc_obj, exc_tb = sys.exc_info()
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
