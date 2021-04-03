@@ -5,7 +5,7 @@ class TimerError(Exception):
     """A custom exception used to report errors in use of Timer class"""
 
 
-class Timer():
+class Timer:
     def __init__(self, timeout=10):
         self._timeout = timeout
         self._start_time = None
