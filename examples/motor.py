@@ -5,122 +5,90 @@ import os
 import traceback
 import RPi.GPIO as GPIO
 import time
-
+from LEDHandler import LEDHandler
+from timer import Timer
 
 # Set up GPIO
 GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
 GPIO.setup(5, GPIO.IN)  # Pin5 als digitalen Eingang festlegen, rauf
 GPIO.setup(6, GPIO.IN)  # Pin6 als digitalen Eingang festlegen, runter
 GPIO.setup(13, GPIO.IN)  # Pin13 als digitalen Eingang festlegen, Geschwindigkeit
-GPIO.setup(22, GPIO.OUT)  # Pin22 als digitalen Ausgang festlegen, LED orange, Geschwindigkeit
-GPIO.setup(23, GPIO.OUT)  # Pin23 als digitalen Ausgang festlegen, LED grün
-GPIO.output(23, 0)
-GPIO.output(22, 1)
+GPIO.setup(19, GPIO.IN)  # Voltage enabled
+GPIO.setup(20, GPIO.IN)  # Emergency Stop
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
 os.system('sudo ifconfig can0 txqueuelen 1000')
-#set up global variables
-running = False
-updated_velocity = False
-upwards = False
-fast = False
-try:
+# set up global variables
 
+led_handler = LEDHandler()
+
+fast = False
+velocity = 800
+led_handler.orange.set_slow()
+
+
+def check_voltage():
+    # both on low if voltage is enabled (230V)
+    voltage_enabled = GPIO.input(19) == 0
+    emergency_stop_active = GPIO.input(20) == 1
+    if emergency_stop_active:
+        led_handler.red.set_fast()
+        led_handler.green.set_off()
+        return False
+    led_handler.red.set_off()
+    if not voltage_enabled:
+        led_handler.green.set_slow()
+        return False
+
+    led_handler.green.set_on()
+    return True
+
+
+while not check_voltage():
+    time.sleep(1)
+
+try:
     # Start with creating a network representing one CAN bus
     network = canopen.Network()
-
     # Connect to the CAN bus
     network.connect(bustype='socketcan', channel='can0')
-
     network.check()
-
     # Add some nodes with corresponding Object Dictionaries
-    # node = canopen.BaseNode402(12, 'sample.eds')
     node1 = canopen.BaseNode402(12, '/home/pi/canopen/examples/brunner_eds.eds')
     node2 = canopen.BaseNode402(15, '/home/pi/canopen/examples/brunner_eds.eds')
     for node in [node1, node2]:
-        print("setup: ", node.id)
         network.add_node(node)
-
-        # Reset network, change states
-        node.nmt.state = 'RESET COMMUNICATION'
-        node.nmt.state = 'RESET'
-        node.nmt.wait_for_bootup(15)
-
-        print('node state 1) = {0}'.format(node.nmt.state))
-
-        # Iterate over arrays or records
-        # TODO: Test an error
         error_log = node.sdo[0x1003]
         for error in error_log.values():
             print("Error {0} was found in the log".format(error.raw))
 
-        for node_id in network:
-            print(network[node_id])
-
-        print('node state 2) = {0}'.format(node.nmt.state))
-
         # Read a variable using SDO
         node.sdo[0x1006].raw = 1
-        # node.sdo[0x100c].raw = 100
-        # node.sdo[0x100d].raw = 3
         node.sdo[0x1014].raw = 163
         node.sdo[0x1003][0].raw = 0
-        # exit(0)
-        # Transmit SYNC every 100 ms
 
     network.sync.start(0.1)
-    print("Sync start")
     for node in [node1, node2]:
         node.load_configuration()
-        # exit(1)
-        print('node state 3) = {0}'.format(node.nmt.state))
 
         node.setup_402_state_machine()
-
-        device_name = node.sdo[0x1008].raw
-        vendor_id = node.sdo[0x1018][1].raw
-        velocity_target = node.sdo[0x1009].raw
-        velocity = node.sdo[0x60FF].raw
-        position = node.sdo[0x607A].raw
-        target_vel = node.sdo[0x6081].raw
-        supported_mode = node.sdo[0x6502].raw
-        motion_profile = node.sdo[0x6086].raw
-        print("-----------------------------------")
         node.state = 'SWITCH ON DISABLED'
 
-        print('node state 4) = {0}'.format(node.nmt.state))
         node.op_mode = "PROFILED VELOCITY"
-        # node.op_mode = "PROFILED POSITION"
         # Read PDO configuration from node
         node.tpdo.read()
         # Re-map TxPDO1
         node.tpdo[1].clear()
         node.tpdo[1].add_variable('Statusword')
-        # node.tpdo[1].add_variable('Velocity actual value')
         node.tpdo[1].add_variable('Position actual value')
         node.tpdo[1].trans_type = 1
         node.tpdo[1].event_timer = 0
         node.tpdo[1].enabled = True
         # Save new PDO configuration to node
         node.tpdo.save()
-        # publish the a value to the control word (in this case reset the fault at the motors)
-
         node.rpdo.read()
-        # node.rpdo[1]['Controlword'].raw = 0x80
-        # node.rpdo[1].transmit()
-        # node.rpdo[1]['Controlword'].raw = 0x81
-        # node.rpdo[1].transmit()
-
         node.state = 'READY TO SWITCH ON'
-        node.state = 'SWITCHED ON'
-
-        # node.rpdo.export('database.dbc')
-
-        # -----------------------------------------------------------------------------------------
-
-        print('Node booted up')
 
 
     def enable_operation():
@@ -155,130 +123,80 @@ try:
                 if time.time() > timeout:
                     raise Exception('Timeout when trying to change state')
                 time.sleep(0.001)
-
-
-    enable_operation()
-
-
-    def quick_stop(channel):
-        if GPIO.input(27):  # if port 25 == 1
-            stop(None)
-            enable_operation()
-            print("Rising edge detected on 27")
-        else:  # if port 25 != 1
-            stop(None)
-            disable_operation()
-            print("Falling edge detected on 25")
-
-
-    # print('Node Status {0}'.format(node.powerstate_402.state))
-
-    # -----------------------------------------------------------------------------------------
-    # node1.nmt.start_node_guarding(0.01)
-    # node.nmt.start_node_guarding(0.01)
-    #
-    # node1.sdo[0x6086].raw = 1
-    # node2.sdo[0x6086].raw = 1
-    node1.sdo[0x6083].raw = 800  # target acc
-    node2.sdo[0x6083].raw = 800
-    node1.sdo[0x6084].raw = 800  # target dec
-    node2.sdo[0x6084].raw = 800
-    # node1.sdo[0x60FF].raw = 800
-    # node2.sdo[0x60FF].raw = 800
-    # node1.sdo[0x607A].raw = -2000000 # Target Post
-    # node2.sdo[0x607A].raw = -2000000  # Target Post
-    #node1.sdo[0x607A].raw = 2000000  # Target Post
-    #node2.sdo[0x607A].raw = 2000000  # Target Post
-
-
-    # node1.sdo[0x6040].raw = 127  # 127 relative pos, 63 abbs?
-    # node2.sdo[0x6040].raw = 127
+        led_handler.green.set_on()
 
 
     def up_vel(channel):
-        global upwards
-        upwards = True
-        print("-------Upwards------")
+        global velocity
         node1.sdo[0x60FF].raw = velocity
         node2.sdo[0x60FF].raw = velocity
 
 
     def down_vel(channel):
-        global upwards
-        upwards = False
-        print("-------Downwards------")
+        global velocity
         node1.sdo[0x60FF].raw = -velocity
         node2.sdo[0x60FF].raw = -velocity
 
 
     def stop(channel):
-        print("Stop")
         node1.sdo[0x60FF].raw = 0
         node2.sdo[0x60FF].raw = 0
-        # Interrupt-Event hinzufuegen, steigende Flanke
 
 
     def change_vel(channel):
         global fast
         global velocity
-        global updated_velocity
-        print("Velocity Change")
         if fast:
             velocity = 800
             fast = not fast
-            GPIO.output(22, 0)
+            led_handler.orange.set_slow()
         else:
             velocity = 1600
             fast = not fast
-            GPIO.output(22, 1)
-        updated_velocity = True
+            led_handler.orange.set_fast()
 
+
+    enable_operation()
+    acceleration = 1600
+    deceleration = acceleration
+    node1.sdo[0x6083].raw = acceleration  # target acc
+    node2.sdo[0x6083].raw = acceleration
+    node1.sdo[0x6084].raw = deceleration  # target dec
+    node2.sdo[0x6084].raw = deceleration
 
     GPIO.add_event_detect(13, GPIO.RISING, callback=change_vel, bouncetime=250)
-    velocity = 800
-    GPIO.output(23, 1)
     stop(None)
-    #quick_stop(None)
+    timer = Timer(timeout=3)
+    timer.start()
     while True:
         try:
             network.check()
         except Exception:
             break
-        if node1.state == 'OPERATION ENABLED' and node2.state == 'OPERATION ENABLED':
-            # Read a value from TxPDO1
-            node1.tpdo[1].wait_for_reception()
-            node2.tpdo[1].wait_for_reception()
-            # speed = node.tpdo[1]['Velocity actual value'].phys
-            position1 = node1.tpdo[1]['Position actual value'].phys
-            position2 = node2.tpdo[1]['Position actual value'].phys
-            up = GPIO.input(5)
-            down = GPIO.input(6)
-            if (up == 0 and not running) or (updated_velocity and running and upwards):
-                up_vel(channel=None)
-                print("up_btn")
-                running = True
-                updated_velocity = False
-            elif (down == 0 and not running) or (updated_velocity and running and not upwards):
-                print("dn_btn")
-                down_vel(channel=None)
-                running = True
-                updated_velocity = False
-            elif up == 1 and down == 1 and running:
-                print("no_btn")
-                stop(channel=None)
-                running = False
-
-            # Read the state of the Statusword
-            # statusword = node.sdo[0x6041].raw
-            # print("pos: ", position1, position2)
-
-            # print('statusword: {0}'.format(statusword))
-            # print('VEL: {0}'.format(position))
-            time.sleep(0.01)
+        if check_voltage():
+            if node1.state == 'OPERATION ENABLED' and node2.state == 'OPERATION ENABLED':
+                up = GPIO.input(5)
+                down = GPIO.input(6)
+                if up == 0 and down == 1:
+                    up_vel(channel=None)
+                    timer.reset()
+                elif down == 0 and up == 1:
+                    down_vel(channel=None)
+                    timer.reset()
+                else:
+                    stop(channel=None)
+                if timer.is_expired():
+                    disable_operation()
+                time.sleep(0.01)
+            else:
+                up = GPIO.input(5)
+                down = GPIO.input(6)
+                if (up == 0 and down == 1) or (down == 0 and up == 1):
+                    enable_operation()
         else:
-            GPIO.output(22, 1)
-            print("standby")
-            time.sleep(5)
+            if node1.state == 'OPERATION ENABLED' and node2.state == 'OPERATION ENABLED':
+                disable_operation()
+            time.sleep(0.1)
 
 except KeyboardInterrupt:
     pass
@@ -288,8 +206,14 @@ except Exception as e:
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
     traceback.print_exc()
+    led_handler.red.set_fast()
+    led_handler.green.set_fast()
+    led_handler.orange.set_fast()
 
 finally:
+    global node1
+    global node2
+    global network
     # Disconnect from CAN bus
     print('going to exit... stopping...')
     node1.state = 'READY TO SWITCH ON'
@@ -305,5 +229,4 @@ finally:
         network.sync.stop()
         network.disconnect()
     GPIO.cleanup()
-    print("\nBye")
     os.system('sudo ifconfig can0 down')
