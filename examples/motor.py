@@ -9,30 +9,36 @@ from LEDHandler import LEDHandler
 from timer import Timer
 
 # Set up GPIO
-GPIO.setmode(GPIO.BCM)  # Art der Pin-Nummerierung
-GPIO.setup(5, GPIO.IN)  # Pin5 als digitalen Eingang festlegen, rauf
-GPIO.setup(6, GPIO.IN)  # Pin6 als digitalen Eingang festlegen, runter
-GPIO.setup(13, GPIO.IN)  # Pin13 als digitalen Eingang festlegen, Geschwindigkeit
-GPIO.setup(19, GPIO.IN)  # 24 V
-GPIO.setup(20, GPIO.IN)  # 24 V
+GPIO.setmode(GPIO.BCM)  # Type of numeration
+GPIO.setup(5, GPIO.IN)  # upwards
+GPIO.setup(6, GPIO.IN)  # downwards
+GPIO.setup(13, GPIO.IN)  # velocity
+GPIO.setup(19, GPIO.IN)  # Voltage enabled
+GPIO.setup(20, GPIO.IN)  # Emergency Stop
 # TODO add to separate file
 os.system('sudo ip link set can0 type can bitrate 1000000')
 os.system('sudo ifconfig can0 up')
 os.system('sudo ifconfig can0 txqueuelen 1000')
 # set up global variables
-updated_velocity = False
-upwards = False
-fast = False
+velocity = 800
 led_handler = LEDHandler()
-led_handler.fast.clear()
-led_handler.ready.clear()
-led_handler.error.clear()
+led_handler.orange.set_slow()
 
 
 def check_voltage():
     # both on low if voltage is enabled (230V)
-    voltage_enabled = GPIO.input(19) == 0 and GPIO.input(20) == 0
-    return voltage_enabled
+    voltage_enabled = GPIO.input(19) == 0
+    emergency_stop_active = GPIO.input(20) == 1
+    if emergency_stop_active:
+        led_handler.red.set_fast()
+        led_handler.green.set_off()
+        return False
+    led_handler.red.set_off()
+    if not voltage_enabled:
+        led_handler.green.set_fast()
+        return False
+    led_handler.green.set_on()
+    return True
 
 
 while not check_voltage():
@@ -44,7 +50,6 @@ try:
     network.connect(bustype='socketcan', channel='can0')
     network.check()
     # Add some nodes with corresponding Object Dictionaries
-    # node = canopen.BaseNode402(12, 'sample.eds')
     node1 = canopen.BaseNode402(12, '/home/pi/canopen/examples/brunner_eds.eds')
     node2 = canopen.BaseNode402(15, '/home/pi/canopen/examples/brunner_eds.eds')
     for node in [node1, node2]:
@@ -55,46 +60,19 @@ try:
         node.nmt.state = 'RESET'
         node.nmt.wait_for_bootup(15)
 
-        print('node state 1) = {0}'.format(node.nmt.state))
-
-        # Iterate over arrays or records
-        # TODO: Test an error
-        error_log = node.sdo[0x1003]
-        for error in error_log.values():
-            print("Error {0} was found in the log".format(error.raw))
-        for node_id in network:
-            print(network[node_id])
-        print('node state 2) = {0}'.format(node.nmt.state))
-
         # Read a variable using SDO
         node.sdo[0x1006].raw = 1
-        # node.sdo[0x100c].raw = 100
-        # node.sdo[0x100d].raw = 3
         node.sdo[0x1014].raw = 163
         node.sdo[0x1003][0].raw = 0
-        # exit(0)
         # Transmit SYNC every 100 ms
 
     network.sync.start(0.1)
     for node in [node1, node2]:
         node.load_configuration()
-        # exit(1)
-        print('node state 3) = {0}'.format(node.nmt.state))
 
         node.setup_402_state_machine()
-
-        device_name = node.sdo[0x1008].raw
-        vendor_id = node.sdo[0x1018][1].raw
-        velocity_target = node.sdo[0x1009].raw
-        velocity = node.sdo[0x60FF].raw
-        position = node.sdo[0x607A].raw
-        target_vel = node.sdo[0x6081].raw
-        supported_mode = node.sdo[0x6502].raw
-        motion_profile = node.sdo[0x6086].raw
-        print("-----------------------------------")
         node.state = 'SWITCH ON DISABLED'
 
-        print('node state 4) = {0}'.format(node.nmt.state))
         node.op_mode = "PROFILED VELOCITY"
         # Read PDO configuration from node
         node.tpdo.read()
@@ -110,10 +88,6 @@ try:
         node.rpdo.read()
         node.state = 'READY TO SWITCH ON'
 
-
-    #        node.state = 'SWITCHED ON'
-
-    # -----------------------------------------------------------------------------------------
 
     def enable_operation():
         for node in [node1, node2]:
@@ -137,8 +111,6 @@ try:
                 if time.time() > timeout:
                     raise Exception('Timeout when trying to change state')
                 time.sleep(0.001)
-        led_handler.ready.set()
-        led_handler.error.clear()
 
 
     def disable_operation():
@@ -149,32 +121,16 @@ try:
                 if time.time() > timeout:
                     raise Exception('Timeout when trying to change state')
                 time.sleep(0.001)
-        led_handler.ready.clear()
-
-
-    def quick_stop(channel):
-        if GPIO.input(27):  # if port 25 == 1
-            stop(None)
-            enable_operation()
-            print("Rising edge detected on 27")
-        else:  # if port 25 != 1
-            stop(None)
-            disable_operation()
-            print("Falling edge detected on 25")
 
 
     def up_vel(channel):
-        global upwards
-        upwards = True
-        print("-------Upwards------")
+        global velocity
         node1.sdo[0x60FF].raw = velocity
         node2.sdo[0x60FF].raw = velocity
 
 
     def down_vel(channel):
-        global upwards
-        upwards = False
-        print("-------Downwards------")
+        global velocity
         node1.sdo[0x60FF].raw = -velocity
         node2.sdo[0x60FF].raw = -velocity
 
@@ -185,19 +141,15 @@ try:
 
 
     def change_vel(channel):
-        global fast
         global velocity
-        if fast:
+        if velocity == 1600:
             velocity = 800
-            fast = not fast
-            led_handler.fast.clear()
+            led_handler.orange.set_slow()
         else:
             velocity = 1600
-            fast = not fast
-            led_handler.fast.set()
+            led_handler.orange.set_fast()
 
 
-    enable_operation()
     acceleration = 1600
     deceleration = acceleration
     node1.sdo[0x6083].raw = acceleration  # target acc
@@ -206,9 +158,7 @@ try:
     node2.sdo[0x6084].raw = deceleration
 
     GPIO.add_event_detect(13, GPIO.RISING, callback=change_vel, bouncetime=250)
-    velocity = 800
-    stop(None)
-    timer = Timer()
+    timer = Timer(timeout=2)
     timer.start()
     while True:
         try:
@@ -236,7 +186,6 @@ try:
                 if (up == 0 and down == 1) or (down == 0 and up == 1):
                     enable_operation()
         else:
-            led_handler.ready.clear()
             if node1.state == 'OPERATION ENABLED' and node2.state == 'OPERATION ENABLED':
                 disable_operation()
             time.sleep(0.1)
@@ -249,7 +198,9 @@ except Exception as e:
     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
     print(exc_type, fname, exc_tb.tb_lineno)
     traceback.print_exc()
-    led_handler.error.set()
+    led_handler.green.set_slow()
+    led_handler.red.set_slow()
+    led_handler.orange.set_slow()
 
 finally:
     # Disconnect from CAN bus
